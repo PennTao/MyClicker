@@ -1,5 +1,9 @@
 var userid;
+var channelid;
+var channel;
+var socket;
 window.onload= init;
+var result = new Array();
 
 
 
@@ -33,6 +37,7 @@ function makeRequest(url,async) {
 
 
 function init(){
+	channelid = sessionStorage.getItem("teacherchannel");
 	userid = sessionStorage.getItem("teacherid");;
 	requestToken();
 	 
@@ -45,7 +50,8 @@ requestToken = function(){
 	httpRequest.onreadystatechange = function(){
 		if (httpRequest.readyState === 4) {
 			if (httpRequest.status === 200) {
-				openChannel(httpRequest.responseText);
+				channel = new goog.appengine.Channel(httpRequest.responseText);
+				openChannel();
 			}else {
 				alert('There was a problem with the request.');
 			}
@@ -53,32 +59,45 @@ requestToken = function(){
 	}
 };
 
-openChannel = function(token) {
-	var channel = new goog.appengine.Channel(token);
-	var socket = channel.open();
+openChannel = function() {
+	socket = channel.open();
 	socket.onopen = onSocketOpen;
 	socket.onmessage = onSocketMessage;
 	socket.onerror = onSocketError;
 	socket.onclose = onSocketClose;
 };
-
+closeChannel = function() {
+	socket.close();
+}
 onSocketError = function(error){
 	alert("Error is <br/>"+error.description+" <br /> and HTML code"+error.code);
 };
 
 onSocketOpen = function() {
 	// socket opened
+	sendClear();
+	
 };
 
 onSocketClose = function() {
-	alert("Socket Connection closed");
+	alert("Vote finished");
 };
 
 onSocketMessage = function(message) {
+
 	var messageXML =  ((new DOMParser()).parseFromString(message.data, "text/xml"));
 	var messageType = messageXML.documentElement.getElementsByTagName("type")[0].firstChild.nodeValue;
-	if(messageType == "StudentAnswer"){
+	var messageChannel =  messageXML.documentElement.getElementsByTagName("channel")[0].firstChild.nodeValue;
+	if(messageType === "StudentAnswer" && messageChannel === channelid){
 		sendMessage(message);
+	}
+	if(messageType === "updateResult" && messageChannel === channelid){
+		
+		result[0] = messageXML.documentElement.getElementsByTagName("ansA")[0].firstChild.nodeValue;
+		result[1] = messageXML.documentElement.getElementsByTagName("ansB")[0].firstChild.nodeValue;
+		result[2] = messageXML.documentElement.getElementsByTagName("ansC")[0].firstChild.nodeValue;
+		result[3] = messageXML.documentElement.getElementsByTagName("ansD")[0].firstChild.nodeValue;
+		
 	}
 
 };
@@ -88,9 +107,8 @@ sendMessage = function(answer){
 	var messageXML =  ((new DOMParser()).parseFromString(answer.data, "text/xml"));
 	
 	var messageFrom = messageXML.documentElement.getElementsByTagName("from")[0].firstChild.nodeValue;
-	
-	var sendMessageURI = '/message_i?message=' + "received" + '&to=' + messageFrom +'&from='+userid ;
-	alert("received answer, send ack to student " + sendMessageURI);
+	var choice = messageXML.documentElement.getElementsByTagName("message")[0].firstChild.nodeValue;
+	var sendMessageURI = '/message_i?channel=' + channelid +  '&message=' + choice + '&to=' + messageFrom +'&from='+userid ;
 	var httpRequest = makeRequest(sendMessageURI,true);
 	
 	httpRequest.onreadystatechange = function(){
@@ -101,4 +119,24 @@ sendMessage = function(answer){
 			}
 		}
 	}
+}
+
+sendClear = function(){
+	var sendMessageURI = '/message_i?channel=' + channelid +  '&message=clear_all';
+	var httpRequest = makeRequest(sendMessageURI,true);
+	result[0] = 0;
+	result[1] = 0;
+	result[2] = 0;
+	result[3] = 0;
+	httpRequest.onreadystatechange = function(){
+		if (httpRequest.readyState === 4) {
+			if (httpRequest.status === 200) {
+				}else {
+				alert('There was a problem with the request.');
+			}
+		}
+	}
+}
+function getResult(){
+	return result;
 }

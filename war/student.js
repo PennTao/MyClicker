@@ -1,8 +1,10 @@
 //
 var userid;
+var channelid;
 window.onload= init;
 
 function init(){
+	channelid = sessionStorage.getItem("studentchannel");
 	userid = sessionStorage.getItem("studentid");;
 	requestToken();
 }
@@ -73,14 +75,14 @@ onSocketClose = function() {
 onSocketMessage = function(message) {
 	var messageXML =  ((new DOMParser()).parseFromString(message.data, "text/xml"));
 	var messageType = messageXML.documentElement.getElementsByTagName("type")[0].firstChild.nodeValue;
-	if(messageType == "AnswerReceived"){
-		alert("answer submit successful");
+	var messageChannel =  messageXML.documentElement.getElementsByTagName("channel")[0].firstChild.nodeValue;
+	if(messageType === "AnswerReceived" && messageChannel === channelid){
 	}
 
 };
 
 sendMessage = function(answer){
-	var sendMessageURI = '/message_s?message=' + answer + '&to=' + sessionStorage.getItem("teacherid") +'&from='+userid ;
+	var sendMessageURI = '/message_s?channel=' + channelid + '&message=' + answer + '&to=' + sessionStorage.getItem("teacherid") +'&from='+userid ;
 	var httpRequest = makeRequest(sendMessageURI,true);
 	httpRequest.onreadystatechange = function(){
 		if (httpRequest.readyState === 4) {

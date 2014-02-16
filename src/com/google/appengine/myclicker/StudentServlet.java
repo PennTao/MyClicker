@@ -27,6 +27,7 @@ public class StudentServlet extends HttpServlet {
 	   */
 	  protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	  throws ServletException, IOException {
+		String channelID = request.getParameter("channel");
 	    String message = request.getParameter("message");
 	    String user = request.getParameter("to");
 	    String from = request.getParameter("from");
@@ -34,7 +35,7 @@ public class StudentServlet extends HttpServlet {
 	        && !message.equals("")) {
 	      try{
 	      	String outputMessage ="<data>" +
-			  "<type>StudentAnswer</type>" +
+			  "<type>StudentAnswer</type>" + "<channel>" + channelID + "</channel>" + 
 			  "<message>"+message+"</message>" +
 			  "<from>"+from+"</from>" +
 			  "</data>"; 

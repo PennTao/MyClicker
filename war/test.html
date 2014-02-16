@@ -1,39 +1,88 @@
-<!DOCTYPE html>
-<meta charset="utf-8">
+<!DOCTYPE HTML>
+<html>
 
-<style>
+<head>
+	<link rel="stylesheet" type="text/css" href="button_style.css"/>
+	<script src='/_ah/channel/jsapi'></script>
+	<script type="text/javascript" src="instructor.js"></script>
+	<meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+	
 
-.chart div {
-  font: 30px sans-serif;
-  background-color: steelblue;
-  text-align: right;
-  padding: 20px;
-  margin: 20px;
-  color: white;
-}
+		<script type="text/javascript" src="canvasjs.min.js"></script>
+	</head>
+<body>
+<script type="text/javascript">
+	window.onload = function () {
+		// initial values of dataPoints
+		init();
+		var dps = [
+		{label: "A", y: 0}	,
+		{label: "B", y: 0},
+		{label: "C", y: 0},
+		{label: "D", y: 0}
+		];
+		var totalAnswers = "total answers: 0";
 
-</style>
-<div class="chart"></div>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src='/_ah/channel/jsapi'></script>
-<script>
-var a=3;
-var b=14;
-var c=20;
-var d=6;
+		var chart = new CanvasJS.Chart("chartContainer",{
+			theme: "theme2",
+			title:{ 
+				text: "Answers"
+			},					
+			legend:{
+				verticalAlign: "top",
+				horizontalAlign: "centre",
+				fontSize: 20
 
-var data = [a,b,c,d];
+			},
+			data : [{
+				type: "column",
+				showInLegend: true,
+				legendMarkerType: "none",				
+				legendText: totalAnswers,
+				indexLabel: "{y}",
+				dataPoints: dps
+			}]
+		});
 
-var x = d3.scale.linear()
-    .domain([0, d3.max(data)])
-    .range([0, 420]);
+		// renders initial chart
+		chart.render();
 
-d3.select(".chart")
-  .selectAll("div")
-    .data(data)
-  .enter().append("div")
-    .style("width", function(d) { return x(d) + "px"; })
-    .text(function(d) { return d; });
+		var sum = 0;	 //initial sum 
+		var result=new Array(); 
+		var updateInterval = 1000;  // milliseconds
 
-</script>
-<script type="text/javascript" src="instructor.js"></script>
+		var updateChart = function () {
+			// Selecting a random dataPoint
+			//var dataPointIndex = Math.round(Math.random()*3);		
+
+			// generating random value
+			//var deltaY = Math.round(2 + Math.random() *(2));	
+
+			// adding random value to random dataPoint
+			// dps[dataPointIndex].y = (dps[dataPointIndex].y + deltaY) > 0 ? dps[dataPointIndex].y + deltaY : 0 ;
+			result = getResult();
+			
+			
+			dps[0].y=isNaN(parseInt(result[0]))? 0 : parseInt(result[0]);
+			dps[1].y=isNaN(parseInt(result[1]))? 0 : parseInt(result[1]);
+			dps[2].y=isNaN(parseInt(result[2]))? 0 : parseInt(result[2]);
+			dps[3].y=isNaN(parseInt(result[3]))? 0 : parseInt(result[3]);
+			// updating legend text. 
+			sum = dps[0].y + dps[1].y + dps[2].y + dps[3].y;
+			totalAnswers = "total answers: " + sum;			
+			chart.options.data[0].legendText = totalAnswers;	
+			chart.render();
+
+		};
+			// update chart after specified interval
+			setInterval(function(){updateChart()}, updateInterval);
+
+		}	
+		</script>
+	<div id="chartContainer" style="height:300px; width:100%;">
+	</div>
+	<a href="javascript:void(0);" onClick = requestToken()>Start</a>
+	<a href="javascript:void(0);" onClick = closeChannel()>Stop</a>
+</body>
+
+</html>

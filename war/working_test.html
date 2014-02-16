@@ -1,0 +1,49 @@
+
+<!doctype html>
+<html>
+	<head>
+		<title>Bar Chart</title>
+		<link rel="stylesheet" type="text/css" href="button_style.css"/>
+		<script src="Chart.js"></script>
+		<script src='/_ah/channel/jsapi'></script>
+		<script type="text/javascript" src="instructor.js"></script>
+		<meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+		<style>
+			canvas{
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" height="450" width="600"></canvas>
+	<script>
+	     var myVar=setInterval(function(){gen()},1000);
+	     var result=new Array(); 
+	     function gen()
+	     {
+	     	result = getResult();
+	     	
+	    	var a=parseInt(result[0]);
+	    	var b=parseInt(result[1]);
+	    	var c=parseInt(result[2]);
+	    	var d=parseInt(result[3]);
+			var barChartData = {
+				labels : ["A","B","C","D"],
+				datasets : [
+				  	{  
+						fillColor : "rgba(220,220,220,0.5)",
+						//strokeColor : "rgba(220,220,220,1)",
+						data : [a,b,c,d]
+				   	}
+			  	]
+			
+		   	}
+	        var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Bar(barChartData);
+	    }
+	</script>
+	<a href="javascript:void(0);" onClick = requestToken()>Start</a>
+	<a href="javascript:void(0);" onClick = closeChannel()>Stop</a>
+	</body>
+</html>
+
+
+
